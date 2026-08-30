@@ -30,6 +30,22 @@ class JsonStreamAssembler(
             pending.clear()
             return
         }
+        // 官方 APP 帧头剥离：帧 = 10B 头 + 载荷，[0..1] LE = 总长-2
+        // 若开头 10 字节长度字段合理且第 3 字节=0x01，跳过帧头（真正消费这 10 字节）
+        if (n - i >= 10) {
+            val declared = (pending[i].toInt() and 0xFF or ((pending[i + 1].toInt() and 0xFF) shl 8)) + 2
+            val third = pending[i + 2].toInt() and 0xFF
+            if (declared in 12..64 * 1024 && (third == 1 || third == 2 || third == 4)) {
+                pending.subList(i, i + 10).clear()
+                i = 0
+            }
+        }
+        val n2 = pending.size
+        if (i >= n2) {
+            pending.clear()
+            return
+        }
+        i = 0
         val first = pending[i].toInt().toChar()
         if (first == '{') {
             // 括号配对扫描（处理字符串转义内花括号）
@@ -37,7 +53,7 @@ class JsonStreamAssembler(
             var j = i
             var inString = false
             var escaped = false
-            while (j < n) {
+            while (j < n2) {
                 val c = pending[j].toInt().toChar()
                 if (inString) {
                     if (escaped) escaped = false
@@ -55,7 +71,7 @@ class JsonStreamAssembler(
                 }
                 j++
             }
-            if (j < n && depth == 0) {
+            if (j < n2 && depth == 0) {
                 // 完整 JSON
                 val bytes = ByteArray(j - i + 1) { pending[i + it] }
                 onJson(String(bytes, Charsets.UTF_8))
@@ -68,7 +84,7 @@ class JsonStreamAssembler(
             return
         }
         // 非 JSON 开头：整段作为非 JSON 字节交给回调
-        val bytes = ByteArray(n - i) { pending[i + it] }
+        val bytes = ByteArray(n2 - i) { pending[i + it] }
         pending.clear()
         onNonJson(bytes)
     }

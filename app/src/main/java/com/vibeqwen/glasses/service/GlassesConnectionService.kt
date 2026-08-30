@@ -181,7 +181,8 @@ class GlassesConnectionService : Service() {
         handshake = QwenHandshake(
             scope = scope,
             send = { text ->
-                transport?.write(text.toByteArray(Charsets.UTF_8))
+                // 官方 APP 私有帧封装（10B 头 + JSON）
+                transport?.write(QwenFramer.wrapJson(text))
             },
         ).also { h ->
             h.onReady = {
@@ -198,6 +199,8 @@ class GlassesConnectionService : Service() {
                 }
                 updateNotification()
             }
+            // 官方 APP 前置：先发 node 会话初始化
+            transport?.write(QwenFramer.nodeInitFrame())
             h.start()
         }
     }
