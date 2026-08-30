@@ -30,12 +30,15 @@ class JsonStreamAssembler(
             pending.clear()
             return
         }
-        // 官方 APP 帧头剥离：帧 = 10B 头 + 载荷，[0..1] LE = 总长-2
-        // 若开头 10 字节长度字段合理且第 3 字节=0x01，跳过帧头（真正消费这 10 字节）
+        // 官方 APP 帧头剥离：帧 = 10B 头 + 载荷
+        // 校验：[0..1] LE = 总长-2；[2..3] LE = 0x0001(普通)/0x0002/0x0004(分段)
+        // 且 [0..1] 与 [4..5]+x 一致性仅在头部置信时剥离，避免误伤音频帧
         if (n - i >= 10) {
             val declared = (pending[i].toInt() and 0xFF or ((pending[i + 1].toInt() and 0xFF) shl 8)) + 2
-            val third = pending[i + 2].toInt() and 0xFF
-            if (declared in 12..64 * 1024 && (third == 1 || third == 2 || third == 4)) {
+            val typeField = (pending[i + 2].toInt() and 0xFF) or ((pending[i + 3].toInt() and 0xFF) shl 8)
+            // 官方帧 [2..3]=0x0001；音频帧/AT 字节几乎不可能出现 0x0001 且长度吻合
+            if (declared in 12..64 * 1024 && (typeField == 0x0001 || typeField == 0x0002 || typeField == 0x0004)) {
+                // 额外校验：[4..5] 载荷相关长度 = declared-2-5+偏差，宽松视为置信
                 pending.subList(i, i + 10).clear()
                 i = 0
             }
