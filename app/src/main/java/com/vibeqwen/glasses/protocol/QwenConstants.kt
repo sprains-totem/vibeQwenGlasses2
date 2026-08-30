@@ -40,11 +40,12 @@ object QwenConstants {
     const val BITS_PER_SAMPLE = 16
 
     // ── RFCOMM / SPP 服务 UUID 候选 ──
-    // HCI 日志 SDP 段 + BES2600 芯片资料（2026-08-30 确认）：
-    //   眼镜（恒玄 BES2600）私有 SPP 服务 = 0x03FD（高速数据/音频通道）+ 0x03F0（控制通道）
-    //   （不是标准 SPP 0x1101——此前顺序错误导致连不上）
-    //   BES 128-bit 扩展：000003FD-0000-1000-8000-00805F9B34FB
-    /** BES 私有高速数据通道（主要录音/数据）—— 首试 */
+    // 官方千问 APP 设备绑定信息提供真实 128-bit 绑定 UUID（2026-08-30 确认）：
+    //   D5A74C04-894A-4E70-C2AE-0BDC687904FE
+    // 后备：BES2600 私有扩展 0x03FD（数据）/0x03F0（控制）/ 标准 SPP
+    /** 官方绑定 UUID（首试） */
+    val UUID_OFFICIAL_BIND = UUID.fromString("D5A74C04-894A-4E70-C2AE-0BDC687904FE")
+    /** BES 私有高速数据通道（主要录音/数据） */
     val UUID_BES_DATA_03FD = UUID.fromString("000003fd-0000-1000-8000-00805f9b34fb")
     /** BES 私有控制通道 */
     val UUID_BES_CTRL_03F0 = UUID.fromString("000003f0-0000-1000-8000-00805f9b34fb")
@@ -55,7 +56,7 @@ object QwenConstants {
     /** HFAG 免提音频网关 */
     val UUID_HFAG_111E = UUID.fromString("0000111e-0000-1000-8000-00805f9b34fb")
 
-    /** 厂商私有 UUID 候选（BES2800 / AliGenie 系列，抓包 SDP 确认） */
+    /** 厂商私有 UUID 候选（BES2800 / AliGenie 系列） */
     // 注意：Nordic UART (6e400001-*) 是 BLE GATT 服务，不是经典 RFCOMM，
     // 不可用于 createRfcommSocketToServiceRecord —— 已移除。
     val VENDOR_UUID_CANDIDATES = listOf(
@@ -63,18 +64,18 @@ object QwenConstants {
         UUID_BES_CTRL_03F0,
     )
 
-    /** 控制通道 UUID 尝试顺序（BES 私有优先） */
-    val DEFAULT_CONTROL_UUIDS = listOf(UUID_BES_CTRL_03F0, UUID_BES_DATA_03FD, UUID_SPP_1101) + VENDOR_UUID_CANDIDATES
+    /** 控制通道 UUID 尝试顺序（官方绑定 UUID 优先） */
+    val DEFAULT_CONTROL_UUIDS = listOf(UUID_OFFICIAL_BIND, UUID_BES_CTRL_03F0, UUID_BES_DATA_03FD, UUID_SPP_1101) + VENDOR_UUID_CANDIDATES
     /** 音频通道 UUID 尝试顺序（HFP 通道在抓包中承载 AT 协商 + 音频帧） */
-    val DEFAULT_AUDIO_UUIDS = listOf(UUID_BES_DATA_03FD, UUID_HFAG_111E, UUID_HSP_1108, UUID_SPP_1101)
+    val DEFAULT_AUDIO_UUIDS = listOf(UUID_OFFICIAL_BIND, UUID_BES_DATA_03FD, UUID_HFAG_111E, UUID_HSP_1108, UUID_SPP_1101)
 
     // ── 设备身份常量（抓包确认） ──
     const val DEVICE_ODM = "AILABS_SG02_QW"
     const val DEVICE_MODEL = "AILABS_SG02_QW"
     const val DEVICE_BRAND = "Quark_glasses"
     const val DEVICE_TYPE = "bes2800"
-    /** 设备 SN：type:1103 认证用（实测值） */
-    const val DEVICE_SN = "D5A74C04894A4E70C2AE0BDC687904FE"
+    /** 设备 SN：type:1103 认证用（眼镜 SynchronizeState 上报值） */
+    const val DEVICE_SN = "5200002612240211A002181"
     /** 眼镜蓝牙 MAC（实测：Qwen Glasses G1191C） */
     const val GLASSES_MAC = "C4:D7:DC:40:19:1C"
     /** 眼镜设备名（实测） */
