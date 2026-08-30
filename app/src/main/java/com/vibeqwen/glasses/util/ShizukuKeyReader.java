@@ -1,7 +1,6 @@
 package com.vibeqwen.glasses.util;
 
 import android.content.pm.PackageManager;
-import android.os.ParcelFileDescriptor;
 
 import rikka.shizuku.Shizuku;
 
@@ -65,15 +64,15 @@ public class ShizukuKeyReader {
         }
     }
 
-    /** 用 Shizuku 的 shell 权限执行命令（newProcess 三参版公开 API） */
+    /** 用 Shizuku 的 shell 权限执行命令 */
     public static String shShizuku(String command) {
         if (!isShizukuAvailable() || !isGranted()) return null;
         try {
-            ParcelFileDescriptor pfd =
+            rikka.shizuku.Shizuku.ShizukuRemoteProcess proc =
                     Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
-            String text = new String(ParcelFileDescriptor.AutoCloseInputStream(pfd)
-                    .readAllBytes(), "UTF-8").trim();
-            pfd.close();
+            if (proc == null) return null;
+            String text = new String(proc.getInputStream().readAllBytes(), "UTF-8").trim();
+            proc.awaitFor();
             return text;
         } catch (Exception e) {
             return null;
