@@ -56,10 +56,11 @@ object QwenConstants {
     val UUID_HFAG_111E = UUID.fromString("0000111e-0000-1000-8000-00805f9b34fb")
 
     /** 厂商私有 UUID 候选（BES2800 / AliGenie 系列，抓包 SDP 确认） */
+    // 注意：Nordic UART (6e400001-*) 是 BLE GATT 服务，不是经典 RFCOMM，
+    // 不可用于 createRfcommSocketToServiceRecord —— 已移除。
     val VENDOR_UUID_CANDIDATES = listOf(
         UUID_BES_DATA_03FD,
         UUID_BES_CTRL_03F0,
-        UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e"),
     )
 
     /** 控制通道 UUID 尝试顺序（BES 私有优先） */
@@ -74,8 +75,10 @@ object QwenConstants {
     const val DEVICE_TYPE = "bes2800"
     /** 设备 SN：type:1103 认证用（实测值） */
     const val DEVICE_SN = "D5A74C04894A4E70C2AE0BDC687904FE"
-    /** 眼镜蓝牙 MAC（实测，注意 B4:6E:10:37:C1:22 是手机自身地址） */
-    const val GLASSES_MAC = "A0:FB:C5:21:9B:20"
+    /** 眼镜蓝牙 MAC（实测：Qwen Glasses G1191C） */
+    const val GLASSES_MAC = "C4:D7:DC:40:19:1C"
+    /** 眼镜设备名（实测） */
+    const val GLASSES_NAME = "Qwen Glasses G1191C"
 
     // ── 超时（毫秒） ──
     /** 握手各步发送间隔 */
