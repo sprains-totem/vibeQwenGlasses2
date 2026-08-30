@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 录音输出目录：getExternalFilesDir(Music)/vibeQwenGlasses -->
+    <external-files-path
+        name="recordings"
+        path="Music/vibeQwenGlasses/" />
+    <external-files-path
+        name="external_music_root"
+        path="." />
+</paths>

@@ -1,0 +1,83 @@
+package com.vibeqwen.glasses.protocol
+
+import java.util.UUID
+
+/**
+ * 千问 G1 眼镜协议关键常量。
+ *
+ * 依据 docs/PROTOCOL.md（逆向实测）：
+ * - 控制通道 L2CAP CID 0x0041（眼镜→手机 JSON）/ 0x004A（手机→眼镜 JSON）
+ * - 音频通道 CID 是【动态】的（实测 0x0047 / 0x0048 因连接而异），
+ *   因此实现必须按魔数头 `87 EF 12 03 07 01 86 08` 全局匹配，而不是固定 CID。
+ * - 音频帧固定 398 字节：[0..7] 魔数 / [8] 序号 / [9..12] 填充 / [13..396] PCM / [397] 填充
+ */
+object QwenConstants {
+
+    // ── 控制通道 CID（信息性；Android RFCOMM 层不可见，保留以供诊断） ──
+    /** 眼镜 → 手机：事件 / 状态 / 心跳 JSON */
+    const val CID_CONTROL_IN = 0x0041
+    /** 手机 → 眼镜：指令 / 配置 / 应答 JSON */
+    const val CID_CONTROL_OUT = 0x004A
+
+    // ── 音频帧 ──
+    /** 帧头魔数（静态观测值） */
+    val AUDIO_MAGIC = byteArrayOf(
+        0x87, 0xEF.toByte(), 0x12, 0x03, 0x07, 0x01, 0x86.toByte(), 0x08.toByte()
+    )
+    /** 单帧总长 */
+    const val AUDIO_FRAME_SIZE = 398
+    /** 帧头长度（魔数8 + 序号1 + 填充4） */
+    const val AUDIO_HEADER_SIZE = 13
+    /** 帧尾填充字节数 */
+    const val AUDIO_TAIL_SIZE = 1
+    /** 有效 PCM 字节数 / 帧 */
+    const val AUDIO_PCM_SIZE = 384
+
+    // ── PCM 参数 ──
+    const val SAMPLE_RATE = 16000
+    const val CHANNELS = 1
+    const val BITS_PER_SAMPLE = 16
+
+    // ── RFCOMM / SPP 服务 UUID 候选 ──
+    // HCI 日志 SDP 段显示标准 UUID 与厂商私有段（0xF003 / 0x03FD 等片段）。
+    // Android 经典蓝牙只能按 RFCOMM 服务 UUID 连接，无法直接指定任意 L2CAP CID，
+    // 故提供候选列表依次尝试（可在设置中追加）。
+    /** SPP 串口服务 */
+    val UUID_SPP_1101 = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")
+    /** HSP 免提 */
+    val UUID_HSP_1108 = UUID.fromString("00001108-0000-1000-8000-00805f9b34fb")
+    /** HFAG 免提音频网关 */
+    val UUID_HFAG_111E = UUID.fromString("0000111e-0000-1000-8000-00805f9b34fb")
+
+    /** 厂商私有 UUID 候选（BES2800 / AliGenie 系列，依抓包 SDP 片段推断） */
+    val VENDOR_UUID_CANDIDATES = listOf(
+        UUID.fromString("0000f003-0000-1000-8000-00805f9b34fb"),
+        UUID.fromString("000003fd-0000-1000-8000-00805f9b34fb"),
+        UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e"),
+    )
+
+    /** 控制通道 UUID 尝试顺序 */
+    val DEFAULT_CONTROL_UUIDS = listOf(UUID_SPP_1101) + VENDOR_UUID_CANDIDATES
+    /** 音频通道 UUID 尝试顺序（HFP 通道在抓包中承载 AT 协商 + 音频帧） */
+    val DEFAULT_AUDIO_UUIDS = listOf(UUID_HFAG_111E, UUID_HSP_1108, UUID_SPP_1101)
+
+    // ── 设备身份常量（抓包确认） ──
+    const val DEVICE_ODM = "AILABS_SG02_QW"
+    const val DEVICE_MODEL = "AILABS_SG02_QW"
+    const val DEVICE_BRAND = "Quark_glasses"
+    const val DEVICE_TYPE = "bes2800"
+    /** 设备 SN：type:1103 认证用（实测值） */
+    const val DEVICE_SN = "D5A74C04894A4E70C2AE0BDC687904FE"
+    /** 眼镜蓝牙 MAC（实测，注意 B4:6E:10:37:C1:22 是手机自身地址） */
+    const val GLASSES_MAC = "A0:FB:C5:21:9B:20"
+
+    // ── 超时（毫秒） ──
+    /** 握手各步发送间隔 */
+    const val HANDSHAKE_STEP_DELAY_MS = 80L
+    /** 等待眼镜上报连接参数的超时 */
+    const val HANDSHAKE_INFO_TIMEOUT_MS = 6000L
+    /** 等待 attach_success 的超时 */
+    const val HANDSHAKE_ATTACH_TIMEOUT_MS = 8000L
+    /** 连接超时 */
+    const val CONNECT_TIMEOUT_MS = 12000L
+}

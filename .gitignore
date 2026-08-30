@@ -1,0 +1,15 @@
+# Gradle
+.gradle/
+build/
+# 本地配置
+local.properties
+# IDE
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+# 日志/临时
+*.log
+*.hprof

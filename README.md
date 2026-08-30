@@ -35,12 +35,22 @@
 
 ## 状态
 
-架构定稿中（M0）。当前进度：
+代码已落地（M0–M3 完成，M4/M5 部分）：
 
 - [x] 协议逆向完成（字节级验证 + 双模型交叉验证）
 - [x] 组合测试验证（4 种发起/结束方式）
-- [ ] M1: Android 连接 + 握手
-- [ ] M2: 录音开始/结束 + 音频落盘
-- [ ] M3: 录音列表 + 播放器（MVP）
-- [ ] M4: 稳定性（重连 / 断流 / 长录音 / 后台）
-- [ ] M5: 扩展（AAC、切片、分享 / ZIP、云同步）
+- [x] M1: Android 连接 + 握手（`bluetooth/` + `protocol/`）
+- [x] M2: 录音开始/结束 + 音频落盘（`audio/` + `service/`）
+- [x] M3: 录音列表 + 播放器（Compose UI）
+- [~] M4: 稳定性（断开自动保存已实现；自动重连待实测）
+- [~] M5: 扩展（AAC/M4A、5 分钟切片已实现；ZIP 导出待做）
+
+## 构建
+
+CI（`.github/workflows/build-and-release.yml`）在主分支 push 时自动构建并上传
+`app-release.apk`（debug 签名，可直接安装）与 `app-debug.apk`：
+
+```bash
+# 本地（环境不支持时改走 CI）
+./gradlew assembleDebug assembleRelease
+```
