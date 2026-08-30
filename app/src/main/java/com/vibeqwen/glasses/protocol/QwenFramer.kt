@@ -27,13 +27,17 @@ object QwenFramer {
     fun buildNodeInit(): ByteArray {
         val baos = ByteArrayOutputStream()
         baos.write(0xbf)
-        baos.write("haddrType\u0000eappId".toByteArray(Charsets.ISO_8859_1))
+        baos.write("haddrType".toByteArray(Charsets.ISO_8859_1))
+        baos.write(0x00)
+        baos.write("eappId".toByteArray(Charsets.ISO_8859_1))
         baos.write("ocom.alibaba.wowbosgAndroidhpeerAddrq".toByteArray(Charsets.ISO_8859_1))
         baos.write("22:c1:37:10:6e:b4".toByteArray(Charsets.ISO_8859_1))
-        baos.write(
-            "dtime\u001B\u0000\u0001\u00A0R\u00A4\u0081\u0080jtimeOffset\u001A\u0001\u00B7t\u0000jtimeZoneIdmAsia/Shanghaigversion\u0001\u00FF"
-                .toByteArray(Charsets.ISO_8859_1)
-        )
+        baos.write("dtime".toByteArray(Charsets.ISO_8859_1))
+        baos.write(byteArrayOf(0x1B, 0x00, 0x00, 0x01, 0xA0.toByte(), 0x52, 0xA4.toByte(), 0x81.toByte(), 0x80.toByte()))
+        baos.write("jtimeOffset".toByteArray(Charsets.ISO_8859_1))
+        baos.write(byteArrayOf(0x1A, 0x01, 0xB7.toByte(), 0x74, 0x00))
+        baos.write("jtimeZoneIdmAsia/Shanghaigversion".toByteArray(Charsets.ISO_8859_1))
+        baos.write(byteArrayOf(0x01, 0xFF.toByte()))
         return baos.toByteArray()
     }
 

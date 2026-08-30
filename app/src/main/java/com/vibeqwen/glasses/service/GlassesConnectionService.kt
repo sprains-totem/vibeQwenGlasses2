@@ -26,6 +26,7 @@ import com.vibeqwen.glasses.protocol.JsonStreamAssembler
 import com.vibeqwen.glasses.protocol.QwenCommands
 import com.vibeqwen.glasses.protocol.QwenEvents
 import com.vibeqwen.glasses.protocol.QwenFrameParser
+import com.vibeqwen.glasses.protocol.QwenFramer
 import com.vibeqwen.glasses.protocol.QwenHandshake
 import com.vibeqwen.glasses.protocol.QwenConstants
 import com.vibeqwen.glasses.util.TimeFormat
