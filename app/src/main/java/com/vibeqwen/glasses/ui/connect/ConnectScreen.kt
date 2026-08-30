@@ -91,20 +91,13 @@ fun ConnectScreen(
             }
         }
         Spacer(Modifier.height(8.dp))
-        // 方案三：读取官方APP的BLE密钥（需 Shizuku）
+        // 方案三：读取官方APP的BLE密钥（root 或 Shizuku）
         OutlinedButton(
             onClick = {
-                val reader = com.vibeqwen.glasses.util.ShizukuKeyReader
-                if (!reader.isShizukuAvailable()) {
-                    rfShowKeyResult = "Shizuku 不可用：请先安装并启动 Shizuku (moe.shizuku.privileged.api)"
-                } else if (!reader.isGranted()) {
-                    rfShowKeyResult = "Shizuku 已连接但未授权。请在弹出的授权框中允许后重试。"
-                } else {
-                    rfShowKeyResult = reader.readOfficialBleKey()
-                }
+                rfShowKeyResult = com.vibeqwen.glasses.util.ShizukuKeyReader.readOfficialBleKey()
             },
             modifier = Modifier.fillMaxWidth()
-        ) { Text("读取官方密钥 (Shizuku)") }
+        ) { Text("读取官方密钥 (root/Shizuku)") }
         // 密钥结果弹窗
         rfShowKeyResult?.let { result ->
             androidx.compose.material3.AlertDialog(
