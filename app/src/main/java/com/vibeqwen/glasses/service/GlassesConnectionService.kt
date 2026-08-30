@@ -164,12 +164,16 @@ class GlassesConnectionService : Service() {
             )
         }
         updateNotification()
+        com.vibeqwen.glasses.util.LogCollector.c("开始连接 ${device.name} ($mac)")
         scope.launch {
             val t = ClassicBtTransport(device)
             val ok = t.connect(transportListener)
             if (ok) {
+                com.vibeqwen.glasses.util.LogCollector.c("传输层已连接，开始握手")
                 transport = t
                 startHandshake()
+            } else {
+                com.vibeqwen.glasses.util.LogCollector.e("传输层连接失败")
             }
         }
     }
@@ -179,14 +183,18 @@ class GlassesConnectionService : Service() {
             it.copy(connection = ConnectionState.HANDSHAKING, message = "正在与眼镜握手…")
         }
         updateNotification()
+        com.vibeqwen.glasses.util.LogCollector.h("发送 node 初始化...")
+        transport?.write(com.vibeqwen.glasses.protocol.QwenFramer.nodeInitFrame())
         handshake = QwenHandshake(
             scope = scope,
             send = { text ->
                 // 官方 APP 私有帧封装（10B 头 + JSON）
-                transport?.write(QwenFramer.wrapJson(text))
+                com.vibeqwen.glasses.util.LogCollector.h("←发送(帧封装): ${text.take(120)}")
+                transport?.write(com.vibeqwen.glasses.protocol.QwenFramer.wrapJson(text))
             },
         ).also { h ->
             h.onReady = {
+                com.vibeqwen.glasses.util.LogCollector.c("握手完成 → READY")
                 publish { st -> st.copy(connection = ConnectionState.READY, message = "已就绪，可开始录音") }
                 updateNotification()
                 // 尝试打开音频第二通道（HFP/HSP）；失败不影响控制通道
@@ -195,6 +203,7 @@ class GlassesConnectionService : Service() {
                 }
             }
             h.onError = { err ->
+                com.vibeqwen.glasses.util.LogCollector.e("握手失败: $err")
                 publish {
                     it.copy(connection = ConnectionState.ERROR, lastError = err, message = "握手失败：$err")
                 }
@@ -209,6 +218,7 @@ class GlassesConnectionService : Service() {
     // ── 下行数据分发 ──
 
     private fun handleControlJson(text: String) {
+        com.vibeqwen.glasses.util.LogCollector.p("收到JSON: ${text.take(120)}")
         // 喂握手状态机（驱动 READY）
         handshake?.onGlassesEvent(text)
         when (val ev = QwenEvents.parse(text).kind) {

@@ -76,6 +76,18 @@ fun ConnectScreen(
         }
         Spacer(Modifier.height(8.dp))
 
+        // 调试：导出 APP 内日志（连接/握手/协议）
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(onClick = { exportLogs(context) }, modifier = Modifier.weight(1f)) {
+                Text("导出日志 (${com.vibeqwen.glasses.util.LogCollector.size()} 条)")
+            }
+            Spacer(Modifier.width(8.dp))
+            OutlinedButton(onClick = { com.vibeqwen.glasses.util.LogCollector.clear() }, modifier = Modifier.weight(1f)) {
+                Text("清空日志")
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+
         val hasPerm = ConnectViewModel.hasPermissions(context)
         if (!hasPerm) {
             Text(
@@ -226,6 +238,28 @@ private fun DeviceRow(
             ) {
                 Text("连接")
             }
+        }
+    }
+}
+
+/** 导出并分享 APP 内日志 */
+private fun exportLogs(context: android.content.Context) {
+    com.vibeqwen.glasses.util.LogCollector.log("UI", "用户点击导出日志")
+    val file = com.vibeqwen.glasses.util.LogCollector.export(context)
+    if (file != null) {
+        com.vibeqwen.glasses.util.LogCollector.log("UI", "日志已导出: ${file.absolutePath}")
+        try {
+            val uri = androidx.core.content.FileProvider.getUriForFile(
+                context, context.packageName + ".fileprovider", file
+            )
+            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(android.content.Intent.createChooser(intent, "分享日志"))
+        } catch (_: Exception) {
+            // FileProvider 未覆盖路径时仅提示文件位置
         }
     }
 }
