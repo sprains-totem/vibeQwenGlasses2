@@ -28,6 +28,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -50,6 +53,7 @@ fun ConnectScreen(
     val context = LocalContext.current
     val state by GlassesBus.uiState.collectAsStateWithLifecycle()
     val devices by vm.devices.collectAsStateWithLifecycle()
+    var rfShowKeyResult by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) { vm.refresh(context) }
 
@@ -85,6 +89,36 @@ fun ConnectScreen(
             OutlinedButton(onClick = { com.vibeqwen.glasses.util.LogCollector.clear() }, modifier = Modifier.weight(1f)) {
                 Text("清空日志")
             }
+        }
+        Spacer(Modifier.height(8.dp))
+        // 方案三：读取官方APP的BLE密钥（需 Shizuku）
+        OutlinedButton(
+            onClick = {
+                val reader = com.vibeqwen.glasses.util.ShizukuKeyReader
+                if (!reader.isShizukuAvailable()) {
+                    rfShowKeyResult = "Shizuku 不可用：请先安装并启动 Shizuku (moe.shizuku.privileged.api)"
+                } else if (!reader.isGranted()) {
+                    rfShowKeyResult = "Shizuku 已连接但未授权。请在弹出的授权框中允许后重试。"
+                } else {
+                    rfShowKeyResult = reader.readOfficialBleKey()
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("读取官方密钥 (Shizuku)") }
+        // 密钥结果弹窗
+        rfShowKeyResult?.let { result ->
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { rfShowKeyResult = null },
+                title = { Text("官方APP BLE 密钥") },
+                text = {
+                    androidx.compose.foundation.text.selection.SelectionContainer {
+                        Text(result, style = MaterialTheme.typography.bodySmall, fontSize = 11.sp)
+                    }
+                },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = { rfShowKeyResult = null }) { Text("关闭") }
+                }
+            )
         }
         Spacer(Modifier.height(8.dp))
 
