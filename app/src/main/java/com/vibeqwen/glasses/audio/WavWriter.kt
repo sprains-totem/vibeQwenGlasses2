@@ -54,18 +54,18 @@ class WavWriter(
 
     private fun writeHeaderPlaceholder() {
         writeAscii(out, "RIFF")
-        writeIntLE(out, 0)
+        writeIntLE(out, 0L)
         writeAscii(out, "WAVE")
         writeAscii(out, "fmt ")
-        writeIntLE(out, 16)
+        writeIntLE(out, 16L)
         writeShortLE(out, 1) // PCM
         writeShortLE(out, channels)
-        writeIntLE(out, sampleRate)
-        writeIntLE(out, sampleRate * channels * bitsPerSample / 8)
+        writeIntLE(out, sampleRate.toLong())
+        writeIntLE(out, (sampleRate * channels * bitsPerSample / 8).toLong())
         writeShortLE(out, channels * bitsPerSample / 8)
         writeShortLE(out, bitsPerSample)
         writeAscii(out, "data")
-        writeIntLE(out, 0)
+        writeIntLE(out, 0L)
     }
 
     // ── 小端 / ASCII 辅助 ──

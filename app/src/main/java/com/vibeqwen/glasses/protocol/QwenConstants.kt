@@ -22,7 +22,8 @@ object QwenConstants {
     // ── 音频帧 ──
     /** 帧头魔数（静态观测值） */
     val AUDIO_MAGIC = byteArrayOf(
-        0x87, 0xEF.toByte(), 0x12, 0x03, 0x07, 0x01, 0x86.toByte(), 0x08.toByte()
+        0x87.toByte(), 0xEF.toByte(), 0x12.toByte(), 0x03.toByte(),
+        0x07.toByte(), 0x01.toByte(), 0x86.toByte(), 0x08.toByte()
     )
     /** 单帧总长 */
     const val AUDIO_FRAME_SIZE = 398

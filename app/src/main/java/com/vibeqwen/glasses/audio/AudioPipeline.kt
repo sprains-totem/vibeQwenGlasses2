@@ -174,7 +174,7 @@ class AudioPipeline(
         if (samples == 0) return Level(0f, -100f)
         val rms = sqrt(sumSq / samples)
         val amp = (rms / 32768.0).coerceIn(0.0, 1.0).toFloat()
-        val db = if (rms <= 0.0) -100f else (20.0 * log10(rms / 32768.0)).coerceAtLeast(-100f).toFloat()
-        return Level(amp, db)
+        val db = if (rms <= 0.0) -100.0 else (20.0 * log10(rms / 32768.0)).coerceAtLeast(-100.0)
+        return Level(amp, db.toFloat())
     }
 }

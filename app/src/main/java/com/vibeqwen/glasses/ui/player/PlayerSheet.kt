@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +38,7 @@ import com.vibeqwen.glasses.util.TimeFormat
 /**
  * 播放器底部弹层：变速(0.5-2.0x) / ±10s 跳转 / 循环 / 波形进度。
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerSheet(
     info: RecordingInfo,
