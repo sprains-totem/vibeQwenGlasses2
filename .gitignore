@@ -13,3 +13,4 @@ captures/
 # 日志/临时
 *.log
 *.hprof
+.ci_logs/
