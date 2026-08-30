@@ -43,6 +43,10 @@ object QwenConstants {
     // 官方千问 APP 设备绑定信息提供真实 128-bit 绑定 UUID（2026-08-30 确认）：
     //   D5A74C04-894A-4E70-C2AE-0BDC687904FE
     // 后备：BES2600 私有扩展 0x03FD（数据）/0x03F0（控制）/ 标准 SPP
+    // ★ 关键：官方 APP 实际用 **L2CAP PSM=130** 连接（逆向确认，BleL2capClient），
+    //    RFCOMM 仅是回退路径。
+    /** L2CAP PSM（官方 APP：connectExclusive: ... psm=130） */
+    const val L2CAP_PSM = 130
     /** 官方绑定 UUID（首试） */
     val UUID_OFFICIAL_BIND = UUID.fromString("D5A74C04-894A-4E70-C2AE-0BDC687904FE")
     /** BES 私有高速数据通道（主要录音/数据） */

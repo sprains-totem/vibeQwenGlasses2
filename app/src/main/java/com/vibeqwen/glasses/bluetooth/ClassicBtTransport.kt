@@ -65,12 +65,28 @@ class ClassicBtTransport(
     fun connect(listener: Listener): Boolean {
         this.listener = listener
         cancelled = false
-        val sock = connectWithCandidates(controlCandidates, "control")
+        // 官方 APP 用 L2CAP PSM=130（逆向确认），优先尝试；失败再走 RFCOMM 候选
+        val sock = openL2capOrControl()
         if (sock == null) return false
         controlSocket = sock
         startReadLoop(sock, isAudio = false)
         listener.onConnected()
         return true
+    }
+
+    /** L2CAP(PSM=130) 优先，失败回退 RFCOMM 候选 */
+    private fun openL2capOrControl(): BluetoothSocket? {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            try {
+                val s = device.createL2capChannel(QwenConstants.L2CAP_PSM)
+                s.connect()
+                Log.i(tag, "[control] L2CAP PSM=${QwenConstants.L2CAP_PSM} 连接成功")
+                return s
+            } catch (e: Exception) {
+                Log.w(tag, "[control] L2CAP PSM=${QwenConstants.L2CAP_PSM} 失败: ${e.message}，回退 RFCOMM")
+            }
+        }
+        return connectWithCandidates(controlCandidates, "control")
     }
 
     /** 建立音频第二通道（阻塞；后台线程调用；失败仅告警不致命） */
