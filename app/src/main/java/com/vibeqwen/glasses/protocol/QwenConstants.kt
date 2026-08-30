@@ -40,27 +40,32 @@ object QwenConstants {
     const val BITS_PER_SAMPLE = 16
 
     // ── RFCOMM / SPP 服务 UUID 候选 ──
-    // HCI 日志 SDP 段显示标准 UUID 与厂商私有段（0xF003 / 0x03FD 等片段）。
-    // Android 经典蓝牙只能按 RFCOMM 服务 UUID 连接，无法直接指定任意 L2CAP CID，
-    // 故提供候选列表依次尝试（可在设置中追加）。
-    /** SPP 串口服务 */
+    // HCI 日志 SDP 段 + BES2600 芯片资料（2026-08-30 确认）：
+    //   眼镜（恒玄 BES2600）私有 SPP 服务 = 0x03FD（高速数据/音频通道）+ 0x03F0（控制通道）
+    //   （不是标准 SPP 0x1101——此前顺序错误导致连不上）
+    //   BES 128-bit 扩展：000003FD-0000-1000-8000-00805F9B34FB
+    /** BES 私有高速数据通道（主要录音/数据）—— 首试 */
+    val UUID_BES_DATA_03FD = UUID.fromString("000003fd-0000-1000-8000-00805f9b34fb")
+    /** BES 私有控制通道 */
+    val UUID_BES_CTRL_03F0 = UUID.fromString("000003f0-0000-1000-8000-00805f9b34fb")
+    /** SPP 串口服务（备用） */
     val UUID_SPP_1101 = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")
     /** HSP 免提 */
     val UUID_HSP_1108 = UUID.fromString("00001108-0000-1000-8000-00805f9b34fb")
     /** HFAG 免提音频网关 */
     val UUID_HFAG_111E = UUID.fromString("0000111e-0000-1000-8000-00805f9b34fb")
 
-    /** 厂商私有 UUID 候选（BES2800 / AliGenie 系列，依抓包 SDP 片段推断） */
+    /** 厂商私有 UUID 候选（BES2800 / AliGenie 系列，抓包 SDP 确认） */
     val VENDOR_UUID_CANDIDATES = listOf(
-        UUID.fromString("0000f003-0000-1000-8000-00805f9b34fb"),
-        UUID.fromString("000003fd-0000-1000-8000-00805f9b34fb"),
+        UUID_BES_DATA_03FD,
+        UUID_BES_CTRL_03F0,
         UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e"),
     )
 
-    /** 控制通道 UUID 尝试顺序 */
-    val DEFAULT_CONTROL_UUIDS = listOf(UUID_SPP_1101) + VENDOR_UUID_CANDIDATES
+    /** 控制通道 UUID 尝试顺序（BES 私有优先） */
+    val DEFAULT_CONTROL_UUIDS = listOf(UUID_BES_CTRL_03F0, UUID_BES_DATA_03FD, UUID_SPP_1101) + VENDOR_UUID_CANDIDATES
     /** 音频通道 UUID 尝试顺序（HFP 通道在抓包中承载 AT 协商 + 音频帧） */
-    val DEFAULT_AUDIO_UUIDS = listOf(UUID_HFAG_111E, UUID_HSP_1108, UUID_SPP_1101)
+    val DEFAULT_AUDIO_UUIDS = listOf(UUID_BES_DATA_03FD, UUID_HFAG_111E, UUID_HSP_1108, UUID_SPP_1101)
 
     // ── 设备身份常量（抓包确认） ──
     const val DEVICE_ODM = "AILABS_SG02_QW"
