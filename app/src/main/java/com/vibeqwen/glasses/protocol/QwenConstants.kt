@@ -85,6 +85,17 @@ object QwenConstants {
     /** 眼镜设备名（实测） */
     const val GLASSES_NAME = "Qwen Glasses G1191C"
 
+    // ── BLE 广播特征（官方 APP 逆向确认，2026-08-30 vibeADB 真机验证）──
+    /** 官方 APP 扫描眼镜的 Service UUID: 0xFEB3（Alibaba 私有） */
+    val UUID_BLE_GLASSES_SERVICE_FEB3 =
+        java.util.UUID.fromString("0000FEB3-0000-1000-8000-00805F9B34FB")
+    /** 官方 APP 扫描眼镜的厂商 ID: 424 (0x1A8) */
+    const val BLE_GLASSES_MANUFACTURER_ID = 424
+    /** 厂商数据 "WoW"（87,111,87）—— 眼镜广播标识 */
+    val BLE_GLASSES_ADV_WOW = byteArrayOf(0x57.toByte(), 0x6F.toByte(), 0x57.toByte())
+    /** 厂商数据 "QWE"（81,87,69）—— 眼镜广播标识（另一形态） */
+    val BLE_GLASSES_ADV_QWE = byteArrayOf(0x51.toByte(), 0x57.toByte(), 0x45.toByte())
+
     // ── 超时（毫秒） ──
     /** 握手各步发送间隔 */
     const val HANDSHAKE_STEP_DELAY_MS = 80L

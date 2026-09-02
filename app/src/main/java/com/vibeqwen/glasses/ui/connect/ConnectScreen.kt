@@ -111,6 +111,28 @@ fun ConnectScreen(
             },
             modifier = Modifier.fillMaxWidth()
         ) { Text("读取官方密钥 (Shizuku)") }
+
+        // BLE 扫描（官方 APP 特征：0xFEB3 + WoW/QWE）
+        OutlinedButton(
+            onClick = {
+                val scanner = com.vibeqwen.glasses.bluetooth.BleGlassesScanner(context)
+                var found = false
+                scanner.scan(
+                    durationMs = 8000,
+                    onFound = { dev, adv ->
+                        found = true
+                        rfShowKeyResult = "BLE 发现眼镜:\n${dev.address}\n广播 ${adv.size} 字节\n详情见日志"
+                    },
+                    onDone = {
+                        if (!found) {
+                            rfShowKeyResult = "BLE 扫描完成，未发现 0xFEB3+WoW 设备。\n请确认眼镜开机且在附近。"
+                        }
+                    }
+                )
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("BLE 扫描眼镜 (0xFEB3)") }
+
         // 密钥结果弹窗
         rfShowKeyResult?.let { result ->
             androidx.compose.material3.AlertDialog(
